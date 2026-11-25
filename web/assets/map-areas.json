@@ -1,0 +1,73 @@
+[
+  {
+    "id": "duck-pond",
+    "name": "OU Duck Pond open east lot",
+    "image": "/assets/duck-pond-map.jpg",
+    "width": 1840,
+    "height": 1590,
+    "extent": {
+      "xmin": -10846804.695851758,
+      "ymin": 4191924.2010189192,
+      "xmax": -10846628.032785373,
+      "ymax": 4192076.860951284,
+      "spatialReference": {
+        "wkid": 102100,
+        "latestWkid": 3857
+      }
+    },
+    "source": "https://maps.normanok.gov/arcgis/rest/services/imagery/Imagery2025/ImageServer",
+    "attribution": "City of Norman · 2025 aerial imagery",
+    "downloaded": "2026-10-22",
+    "imagery_year": 2025,
+    "source_pixel_size_m": 0.0762001524003048,
+    "ground_resolution_m": 0.0784,
+    "coverage_note": "Open parking lot east of the tree-lined Duck Pond lot."
+  },
+  {
+    "id": "ou",
+    "name": "OU campus",
+    "image": "/assets/ou-map.jpg",
+    "extent": {
+      "xmin": -10849334.626177426,
+      "ymin": 4188914.208012858,
+      "xmax": -10846166.212486835,
+      "ymax": 4193954.8661569795,
+      "spatialReference": {
+        "wkid": 102100,
+        "latestWkid": 3857
+      }
+    },
+    "width": 3300,
+    "height": 5250,
+    "source": "https://maps.normanok.gov/arcgis/rest/services/imagery/Imagery2025/ImageServer",
+    "attribution": "City of Norman · 2025 aerial imagery",
+    "downloaded": "2026-10-22",
+    "imagery_year": 2025,
+    "source_pixel_size_m": 0.0762001524003048,
+    "ground_resolution_m": 0.7845
+  },
+  {
+    "id": "riverwind",
+    "name": "Riverwind open south lots",
+    "image": "/assets/riverwind-map.jpg",
+    "extent": {
+      "xmin": -10854030.0313217,
+      "ymin": 4187984.7539963885,
+      "xmax": -10853513.190828731,
+      "ymax": 4188322.688164868,
+      "spatialReference": {
+        "wkid": 102100,
+        "latestWkid": 3857
+      }
+    },
+    "width": 2600,
+    "height": 1700,
+    "source": "https://maps.normanok.gov/arcgis/rest/services/imagery/Imagery2025/ImageServer",
+    "attribution": "City of Norman · 2025 aerial imagery",
+    "downloaded": "2026-10-22",
+    "imagery_year": 2025,
+    "source_pixel_size_m": 0.0762001524003048,
+    "ground_resolution_m": 0.1625,
+    "coverage_note": "Open parking lots south and southwest of Riverwind Casino."
+  }
+]

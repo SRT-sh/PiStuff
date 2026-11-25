@@ -1,0 +1,15 @@
+const assert = require('node:assert/strict');
+const {windowWithin, zoomWindow} = require('../web/graphs.js');
+const {sampleAt} = require('../web/timeline.js');
+assert.deepEqual(windowWithin(-5, 5, 0, 20), [0, 10]);
+assert.deepEqual(windowWithin(15, 25, 0, 20), [10, 20]);
+assert.deepEqual(windowWithin(-100, 100, 0, 20), [0, 20]);
+assert.deepEqual(zoomWindow(0, 20, .5, 5, 0, 20), [2.5, 12.5]);
+assert.deepEqual(zoomWindow(2.5, 12.5, 2, 5, 0, 20), [0, 20]);
+assert.ok(zoomWindow(0, 1, .00001, .5, 0, 20)[1] - zoomWindow(0, 1, .00001, .5, 0, 20)[0] >= .000999999);
+const points = [[1, 10], [5, 50], [7, null], [9, 90]];
+assert.deepEqual(sampleAt(points, 3, .25, 'linear'), {value:30, age:2});
+assert.deepEqual(sampleAt(points, 5, .25, 'linear'), {value:50, age:0});
+for (const time of [0, 6, 7, 8, 10]) assert.equal(sampleAt(points, time, .25, 'linear'), null);
+assert.deepEqual(sampleAt([[1,10], [1,20], [3,60]], 2, .25, 'linear'), {value:40, age:1});
+console.log('Linked zoom bounds and interpolation across sparse samples, duplicates, invalid rows and endpoints passed');

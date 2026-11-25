@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sooner Racing Team · Telemetry &amp; Analysis</title><link rel="stylesheet" href="/style.css"></head>
+<body><a class="skip" href="#main">Skip to content</a>
+<header class="masthead">
+<a href="/track" class="brand" aria-label="SOONER RACING TEAM — Track"><img src="/assets/team-logo.png" alt="SOONER RACING TEAM"><span>Telemetry &amp; Analysis</span></a>
+<div class="statusbar"><span><span class="status-dot" id="connectionDot"></span><b id="connectionState">Connecting</b></span><div class="storage-summary"><span><b id="storageLabel">Pi storage</b><b id="globalStorage">Checking</b></span><meter id="storageMeter" min="0" max="1" value="0" aria-label="Available Pi storage"></meter><small id="logStorage"></small></div></div>
+<div class="header-control"><button id="logControl" type="button" disabled>Start Log</button><button id="setupStream" type="button" class="secondary" title="Show live sensor data without recording" disabled>Start stream</button><span id="logControlStatus" aria-live="polite"></span></div>
+</header>
+<nav aria-label="Main navigation"><a href="/track" data-route="track"><span>Track</span></a><a href="/sensors" data-route="sensors"><span>Sensors</span></a><a href="/sessions" data-route="sessions"><span>Sessions</span></a><a href="/timeline" data-route="timeline"><span>Timeline</span></a><a href="/analysis" data-route="analysis"><span>Analysis</span></a><a href="/models" data-route="models"><span>Models</span></a><a href="/setup" data-route="setup"><span>Setup</span></a></nav>
+<main id="main">
+<div id="pageNotice" class="notice" role="status" hidden></div>
+<div data-page="track" class="page-content track-page">
+<section class="panel track-session">
+<div class="track-runbar">
+<div class="track-run-summary"><span>Recording <b id="status" class="pill off">unknown</b></span><span>Driver <b id="globalDriver">—</b></span><span>Run <b id="globalRun">—</b></span></div>
+<div class="track-run-actions"><button id="editRunInfo" type="button" class="track-link" aria-expanded="false" aria-controls="runInfo">Edit run info</button><a href="/setup#setupPanel" class="track-link">Timing setup ↗</a></div>
+</div>
+<p id="runReadiness" class="track-timing-status" aria-live="polite">Checking recording readiness</p>
+<p id="timingStatus" class="track-timing-status">Waiting for device data</p>
+<div id="runInfo" class="run-info" hidden>
+<p class="run-info-note">For the next recording.</p>
+<div class="form">
+<label>Next Run<div id="nextRun" class="next-run">--</div></label>
+<label>Driver<input id="driver" autocomplete="off"></label>
+<label>Test Type<input id="test_type" autocomplete="off" placeholder="autocross, skidpad, brake"></label>
+<label>Course<input id="course" autocomplete="off"></label>
+<label>Location<input id="test_location" autocomplete="off"></label>
+<label>Car Setup<input id="car_config" autocomplete="off"></label>
+<label>Tire<input id="tire_compound" autocomplete="off"></label>
+<label>Cold FL psi<input id="cold_fl_psi" type="number" step="0.1"></label>
+<label>Cold FR psi<input id="cold_fr_psi" type="number" step="0.1"></label>
+<label>Cold RL psi<input id="cold_rl_psi" type="number" step="0.1"></label>
+<label>Cold RR psi<input id="cold_rr_psi" type="number" step="0.1"></label>
+<label>Brake Bias<input id="brake_bias" autocomplete="off"></label>
+<label>Aero<input id="aero_config" autocomplete="off"></label>
+<label>Valid<select id="valid_run"><option value="yes">Yes</option><option value="no">No</option><option value="review">Review</option></select></label>
+<label class="span2">Notes<textarea id="notes"></textarea></label>
+<button id="saveRunMetadata" class="save-button" title="Save run metadata for the next log">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5z"></path><path d="M8 3v6h8V3"></path><path d="M8 21v-7h8v7"></path></svg>
+<span>Save Run Info</span>
+</button>
+<div id="runMetadataSaveStatus" class="save-status" aria-live="polite"></div>
+</div>
+</div>
+</section>
+<section class="panel track-readings" aria-label="Live driving readings">
+<div class="track-motion">
+<div class="track-reading track-speed"><div class="label">Speed</div><div id="speed" class="value">-- mph</div></div>
+<div class="track-reading"><div class="label">Longitudinal</div><div id="longG" class="value">-- g</div></div>
+<div class="track-reading"><div class="label">Lateral</div><div id="latG" class="value">-- g</div></div>
+</div>
+<div class="track-timing">
+<div class="track-reading"><div class="label">Lap/Run</div><div id="lapCount" class="value">0</div></div>
+<div class="track-reading"><div class="label">Current</div><div id="currentTime" class="value">--</div></div>
+<div class="track-reading"><div class="label">Best</div><div id="bestTime" class="value">--</div></div>
+<div class="track-reading"><div class="label">Live Delta</div><div id="deltaTime" class="value">--</div></div>
+</div>
+</section>
+<section class="panel trace-panel"><div class="trace-toolbar"><h2>Run trace &amp; speed</h2><div class="trace-legend"><span class="trace-current">Current</span><span class="trace-best">Best</span></div></div><div class="trace-layout"><canvas id="trackPlot" width="900" height="360" tabindex="0" aria-label="Run trace. Hover or tap to inspect speed. Use arrow keys to inspect samples and Escape to clear."></canvas><canvas id="plot" width="900" height="360" tabindex="0" aria-label="Speed history. Hover or tap to locate a sample on the trace. Use arrow keys to inspect samples and Escape to clear."></canvas><div id="traceTooltip" class="trace-tooltip" role="tooltip" hidden></div></div><output id="traceReadout" class="trace-readout"></output></section>
+<section class="panel track-secondary">
+<details id="completedRuns" class="track-disclosure"><summary><span>Completed runs</span><span id="completedSummary" class="track-disclosure-status">No completed runs yet</span></summary>
+<div id="completedTable" class="table-scroll" hidden><table><thead><tr><th>#</th><th>Type</th><th>Time</th><th>Delta</th><th>Warning</th></tr></thead><tbody id="laps"></tbody></table></div>
+</details>
+<div class="track-diagnostics">
+<details id="trackDiagnostics" class="track-disclosure"><summary><span>Diagnostics</span><span id="trackHealth" class="track-disclosure-status">Waiting for data</span></summary>
+<div class="track-diagnostic-grid">
+<div class="track-diagnostic"><div class="label">GPS</div><div id="gps" class="value small">--</div></div>
+<div class="track-diagnostic track-stream"><div class="label">Stream</div><div id="stream" class="health-stats"><span><b id="streamHz">—</b><small>Hz</small></span><span><b id="streamQueue">0</b><small>Backlog · ms</small></span><span><b id="streamAge">—</b><small>Age · s</small></span></div><div id="streamErrors" class="health-errors">CRC 0 · gaps 0 · reconnects 0</div></div>
+<div class="track-diagnostic"><div class="label">Log</div><div id="logHealth" class="value small">--</div></div>
+<div class="track-diagnostic"><div class="label">Pi CPU</div><div id="cpuTemp" class="value small">--</div></div>
+</div>
+</details>
+<p id="trackFaults" class="track-faults" role="status" hidden></p>
+</div>
+</section>
+</div>
+<div data-page="sensors" class="page-content" hidden>
+<section class="panel sensor-tree-panel">
+<div class="sensor-tree-tools"><label>Filter sensors or channels<input id="sensorSearch" type="search" placeholder="Steering, voltage, IMU, RPM, CAN ID…"></label><div class="sensor-tree-actions"><button id="sensorExpand" type="button" class="secondary">Expand all</button><button id="sensorCollapse" type="button" class="secondary">Collapse all</button></div></div>
+<div class="sensor-tree-heading"><span>Sensor / channel</span><span>Latest value / status</span></div>
+<ul id="sensorTree" class="sensor-tree" aria-label="Sensors grouped by measurement type"></ul>
+<p id="sensorTreeEmpty" class="empty" hidden>No sensors or channels match your search.</p>
+<p id="canScalingStatus" role="status"></p>
+</section></div>
+<div data-page="sessions" class="page-content" hidden>
+<section class="panel">
+<div class="section-heading"><h2>Session library</h2><div class="session-library-actions"><button id="refreshSessions" type="button" class="secondary">Refresh library</button><button id="downloadAll" type="button" aria-controls="archivePanel">Download All .ld</button></div></div>
+<section id="archivePanel" class="panel archive-panel" hidden aria-labelledby="archiveHeading">
+<h2 id="archiveHeading">Prepare download</h2>
+<progress id="archiveProgress" max="100" value="0" aria-label="ZIP preparation progress"></progress>
+<p id="archiveStatus" role="status"></p>
+<p id="archiveFile" class="archive-file"></p>
+<div class="actions"><button id="archiveCancel" type="button" class="secondary" hidden>Cancel preparation</button><a id="archiveReady" class="button" href="#" hidden>Download ZIP</a></div>
+</section>
+<div class="session-filters" role="group" aria-label="Sort and filter sessions">
+<label>Find a session<input id="sessionSearch" type="search" placeholder="Run, driver, course…"></label>
+<label>Sort by date<select id="sessionSort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
+<label>Driver<select id="sessionDriver"><option value="">All drivers</option></select></label>
+<label>Course<select id="sessionCourse"><option value="">All courses</option></select></label>
+<label>Test type<select id="sessionType"><option value="">All test types</option></select></label>
+<label>Source<select id="sessionOrigin"><option value="">All sources</option><option value="current">Current storage</option><option value="pi-local">Pi local</option><option value="imported">Imported</option></select></label>
+</div>
+<p id="sessionCount" class="session-meta" role="status"></p>
+<span id="sessionRecoveryStatus" role="status"></span>
+<div id="sessionList" class="session-list"></div>
+</section>
+<section class="panel"><h2>Import files</h2><label class="upload">Logs or model inputs (256 MiB max)<input id="importFiles" type="file" multiple accept=".zip,.ld,.ldx,.blf,.csv,.bin,.json,.tir,.TIR,.dbc"></label><button id="importButton">Import files</button><span id="importStatus" role="status"></span></section>
+</div>
+<div data-page="timeline" class="page-content" hidden>
+<section class="panel"><div class="section-heading"><h2>Run timeline</h2><a href="/sessions">Browse sessions</a></div>
+<label>Saved run<select id="timelineSession"><option value="">Choose a finished recording</option></select></label>
+<p id="timelineStatus" role="status"></p>
+<div id="timelineControls" hidden>
+<p id="timelineClock"></p><div id="timelineWarnings" class="notice" hidden></div>
+<details><summary id="timelineChannelSummary">Choose channels</summary><label>Find a channel<input id="timelineSearch" type="search" placeholder="RPM, steering, flow, acceleration…"></label><div id="timelineChannels" class="timeline-channels"></div></details>
+<form id="timelineWindow" class="filters timeline-window">
+<label>Start (s)<input id="timelineStart" type="number" min="0" step="any" required></label>
+<label>End (s)<input id="timelineEnd" type="number" min="0" step="any" required></label>
+<label>Maximum sample age (s)<input id="timelineGap" type="number" min="0.001" max="10" step="any" value="0.25" required></label>
+<button id="timelineApply" type="submit">Update plots</button><button id="timelineFull" type="button" class="secondary">Whole run</button>
+</form>
+<div class="timeline-inspection"><label>Inspect time (s)<input id="timelineCursor" type="range" step="0.001" min="0" max="1" value="0"></label><output id="timelineTime">0.000 s</output></div>
+<div id="timelinePlots" class="timeline-plots"></div>
+<p id="timelineResolution"></p>
+<div class="actions"><label>CSV sample rate (Hz)<input id="timelineHz" type="number" min="1" max="200" value="50" step="any"></label><label class="timeline-all"><input id="timelineAll" type="checkbox">Include all recorded numeric channels</label><button id="timelineExport" type="button" class="secondary">Download combined CSV</button></div>
+</div></section></div>
+<div data-page="analysis" class="page-content" hidden><section class="panel"><div class="section-heading"><h2>Analysis</h2><a class="button secondary" href="/sessions">Browse sessions</a></div><form id="analysisForm"><label>Analysis tool<select id="analysisCommand"><option value="laps">Laps, sectors &amp; session comparisons</option><option value="gg">G-G plots &amp; driver envelopes</option></select></label><fieldset><legend>Source sessions</legend><div class="session-picker" id="analysisSessions"></div></fieldset><div id="analysisParameters"></div><div id="analysisIntro"></div><div class="actions"><button type="submit" id="runAnalysis">Queue analysis</button><span id="analysisStatus" role="status"></span></div></form></section><section class="panel"><h2>Analysis jobs</h2><div id="analysisJobs"></div></section></div>
+<div data-page="models" class="page-content" hidden><section class="panel"><div class="section-heading"><h2>Vehicle &amp; tire models</h2><a class="button secondary" href="/sessions">Import TIR / CSV files</a></div><form id="modelsForm"><label>Model<select id="modelsCommand"><option value="tire-model">Theoretical tire envelope</option><option value="minimum-lap">Minimum-lap model</option><option value="tire-comparison">LC0 / R20 tire comparison</option></select></label><fieldset><legend>Source sessions (optional)</legend><div class="session-picker" id="modelsSessions"></div></fieldset><div id="modelsParameters"></div><div id="modelsIntro"></div><div class="actions"><button type="submit" id="runModel">Queue model</button><span id="modelsStatus" role="status"></span></div></form></section><section class="panel"><h2>Model jobs</h2><div id="modelsJobs"></div></section></div>
+<div data-page="setup" class="page-content" hidden>
+<section class="panel">
+<h2>Device settings</h2>
+<form id="settingsForm">
+<div class="form" id="deviceFields"></div>
+<details class="settings-details"><summary>CAN settings</summary>
+<div class="form" id="canFields"></div>
+<p class="form-note">A DBC overrides the CAN map. Automatic logging requires a decoded RPM signal.</p>
+<div class="settings-links"><a href="/examples/motec_m1_reference.csv" download>Download default map</a><a href="/sessions">Import CAN files</a></div>
+<div id="canLibrary"></div>
+</details>
+<details class="settings-details"><summary>GPIO, network &amp; advanced settings</summary><div class="form" id="advancedDeviceFields"></div></details>
+<div class="actions"><button type="submit">Save device settings</button><span class="form-note">Requires a service restart.</span><span id="deviceSettingsStatus" role="status"></span></div>
+</form>
+<details id="effectiveSettings" class="settings-details" hidden><summary>Active configuration</summary>
+<dl><dt>Settings file</dt><dd id="settingsFilePath"></dd><dt>Data folder</dt><dd id="settingsDataPath"></dd></dl>
+<pre id="settingsEffectiveValues" class="document-text"></pre>
+</details>
+</section>
+<section class="panel" id="canMappingPanel">
+<div class="section-heading"><h2>CAN channel mappings</h2><a class="button secondary" id="downloadCanMap" href="/api/can_mapping/download" download>Download current map</a></div>
+<form id="canMappingForm">
+<div class="can-mapping-tools"><label>Find a channel<input id="canMappingSearch" type="search" placeholder="Name or CAN address"></label><button id="reloadCanMapping" type="button" class="secondary">Reload / discard edits</button><span id="canMappingCount" role="status"></span></div>
+<div class="table-scroll can-mapping-scroll"><table class="can-mapping-table"><thead><tr><th scope="col">Channel</th><th scope="col">CAN address (hex)</th><th scope="col">Layout</th><th scope="col">Source unit</th><th scope="col">Display unit</th></tr></thead><tbody id="canMappingRows"></tbody></table></div>
+<p id="canMappingEmpty" class="empty" hidden>No matching channels.</p>
+<div class="actions"><button id="saveCanMapping" type="submit" disabled>Save mappings &amp; units</button><span class="form-note">Addresses apply next run. Display units apply immediately.</span><span id="canMappingStatus" role="status">Loading CAN map…</span></div>
+</form></section>
+<section class="panel" id="steeringCalibrationPanel">
+<h2>Steering calibration</h2>
+<div class="form steering-fields">
+<div class="steering-point"><label>Left raw<input id="raw_left" type="number" step="any"></label><button class="secondary steering-capture" data-point="raw_left" type="button" aria-label="Capture left">Capture</button><label>Left angle (°)<input id="left_angle_deg" type="number" step="any" placeholder="Negative"></label></div>
+<div class="steering-point"><label>Center raw<input id="raw_center" type="number" step="any"></label><button class="secondary steering-capture" data-point="raw_center" type="button" aria-label="Capture center">Capture</button></div>
+<div class="steering-point"><label>Right raw<input id="raw_right" type="number" step="any"></label><button class="secondary steering-capture" data-point="raw_right" type="button" aria-label="Capture right">Capture</button><label>Right angle (°)<input id="right_angle_deg" type="number" step="any" placeholder="Positive"></label></div>
+</div>
+<div class="actions"><button id="saveSteeringCalibration" class="save-button" type="button">Save steering calibration</button><span class="form-note">Calibrate with the car stationary.</span><span id="steeringCalibrationSaveStatus" class="save-status" aria-live="polite"></span></div>
+</section>
+<section class="panel" id="setupPanel">
+<h2>Timing gates</h2>
+<div class="gate-toolbar"><label>Mode<select id="mode"><option value="lap">Lap</option><option value="autocross">Autocross</option></select></label><label>Area<select id="gateArea"><option value="duck-pond">OU Duck Pond open east lot</option><option value="ou">OU campus overview</option><option value="riverwind">Riverwind open south lots</option></select></label><button id="gateLocate" class="secondary" type="button">Center on GPS</button><span id="gateGpsStatus" role="status">GPS unavailable</span></div>
+<div class="gate-actions"><button id="drawStart" type="button" class="secondary" aria-pressed="false">Draw start gate</button><button id="drawFinish" type="button" class="secondary finish" aria-pressed="false">Draw finish gate</button><button id="mapPan" type="button" class="secondary" aria-pressed="true">Pan</button><button id="mapZoomIn" type="button" class="secondary" aria-label="Zoom in">+</button><button id="mapZoomOut" type="button" class="secondary" aria-label="Zoom out">−</button><button id="mapReset" type="button" class="secondary">Fit area</button></div>
+<canvas id="gateMap" width="1100" height="600" aria-label="Offline timing map. Select Draw start or finish and tap two gate endpoints. Use GPS buttons or coordinates as alternatives."></canvas><div class="map-caption"><span id="gateMapStatus" role="status"></span><small id="mapAttribution">City of Norman · 2025 aerial imagery · offline</small></div>
+<div class="gps-gates"><div><h3>Start gate</h3><button type="button" class="secondary gps-capture" data-gate="start" data-endpoint="1">GPS → endpoint 1</button><button type="button" class="secondary gps-capture" data-gate="start" data-endpoint="2">GPS → endpoint 2</button><button type="button" class="gps-center" data-gate="start">Center gate on GPS</button></div><div class="finish"><h3>Finish gate</h3><button type="button" class="secondary gps-capture" data-gate="finish" data-endpoint="1">GPS → endpoint 1</button><button type="button" class="secondary gps-capture" data-gate="finish" data-endpoint="2">GPS → endpoint 2</button><button type="button" class="gps-center" data-gate="finish">Center gate on GPS</button></div></div>
+<div class="form gate-options"><label>Gate width (m)<input id="gateWidth" type="number" min="1" max="100" step="1" value="12"></label><label>Travel heading (°)<input id="gateHeading" type="number" min="0" max="359.99" step="any" value="0"></label><label>Minimum speed (mph)<input id="min_speed_mph" type="number" step="0.5" value="5"></label><label>Minimum gap (s)<input id="min_gap_s" type="number" step="0.5" value="8"></label></div>
+<details><summary>Gate coordinates</summary><div class="form">
+<label>Start latitude 1<input id="start_lat1" type="number" step="0.00000001"></label><label>Start longitude 1<input id="start_lon1" type="number" step="0.00000001"></label><label>Start latitude 2<input id="start_lat2" type="number" step="0.00000001"></label><label>Start longitude 2<input id="start_lon2" type="number" step="0.00000001"></label><label class="finish">Finish latitude 1<input id="finish_lat1" type="number" step="0.00000001"></label><label class="finish">Finish longitude 1<input id="finish_lon1" type="number" step="0.00000001"></label><label class="finish">Finish latitude 2<input id="finish_lat2" type="number" step="0.00000001"></label><label class="finish">Finish longitude 2<input id="finish_lon2" type="number" step="0.00000001"></label></div></details><div class="actions"><button id="saveConfig" type="button">Save timing</button><button id="resetTiming" type="button" class="secondary">Reset laps</button><button id="useGpsHeading" type="button" class="secondary">Use GPS heading</button><span id="timingConfigSaveStatus" class="save-status" aria-live="polite"></span></div>
+</section>
+<section class="panel"><h2>Airspeed calibration</h2><form id="airForm"><label>Calibration JSON (volts to m/s)<textarea id="airCalibration" class="code-input" spellcheck="false" rows="9" required></textarea></label><div class="actions"><button type="submit">Save airspeed calibration</button><button id="airExample" type="button" class="secondary">Load example</button><span id="airStatus" role="status"></span></div></form></section></div>
+</main><script src="/gates.js"></script><script src="/sensors.js"></script><script src="/trace.js"></script><script src="/timeline.js"></script><script src="/downloads.js"></script><script src="/app.js"></script></body></html>

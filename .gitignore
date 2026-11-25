@@ -1,0 +1,30 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Local configuration and generated work; templates remain tracked.
+config/steering_calibration.json
+config/airspeed_calibration.json
+config/can_profile.json
+data/
+.venv/
+archive/build/
+archive/work/
+
+# Local telemetry and reports
+/archive/analysis_output/
+/archive/folder_import_output/
+/archive/lap_smoke_output/
+/archive/serial_samples/
+/archive/output/
+/output/
+/outputs/
+*.ld
+*.ldx
+*.blf
+VN300_*.csv
+VN300_*.bin

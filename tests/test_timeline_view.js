@@ -1,0 +1,16 @@
+const assert = require('node:assert/strict');
+const timeline = require('../web/timeline.js');
+const samples = [[.1, 10], [.2, 20], [.3, null], [.4, 40]];
+assert.equal(timeline.sampleAt(samples, 0, .25), null);
+assert.deepEqual(timeline.sampleAt(samples, .15, .25), {value:10, age:.15-.1});
+assert.equal(timeline.sampleAt(samples, .3, .25), null);
+assert.equal(timeline.sampleAt(samples, 1, .25), null);
+assert.deepEqual(timeline.sampleAt(samples, .2, .25), {value:20, age:0});
+assert.deepEqual(timeline.domain([[0, 1], [1, 3], [2, 1e6]], 0, 1), [.8, 3.2]);
+const channels = ['Steering_Raw', 'Steering_Angle_deg', 'Mass_Flow_Air_slm', '0x600 · Engine_Speed'].map((name, id) => ({id:String(id), name}));
+assert.deepEqual(timeline.defaults(channels), ['1', '2', '3']);
+const query = timeline.queryFor(['a', 'b'], 3, 4, .2);
+assert.deepEqual(query.getAll('channel'), ['a', 'b']);
+assert.equal(query.get('start'), '3');
+assert.equal(query.get('gap'), '0.2');
+console.log('Timeline cursor handles different rates, future samples, invalid readings, dropouts and bounded axes');
